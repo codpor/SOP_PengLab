@@ -1,4 +1,4 @@
-/* TEMA GITHUB DARK */
+/* --- TEMA GITHUB DARK --- */
 :root {
     --bg-main: #0d1117;
     --bg-card: #161b22;
@@ -22,7 +22,7 @@ body {
     overflow: hidden;
 }
 
-/* --- SIDEBAR / IDENTITAS KIRI --- */
+/* --- SIDEBAR UTAMA (Desktop: Kiri) --- */
 .sidebar {
     width: 320px;
     background-color: var(--bg-card);
@@ -33,7 +33,24 @@ body {
     box-sizing: border-box;
     overflow-y: auto;
     flex-shrink: 0;
+    transition: transform 0.3s ease; /* Untuk animasi mobile */
+    z-index: 100; /* Agar di atas segalanya di mobile */
 }
+
+/* Tombol Tutup Mobile - Sembunyikan di Desktop */
+.close-sidebar-btn {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 2rem;
+    cursor: pointer;
+}
+
+.close-sidebar-btn:hover { color: var(--text-primary); }
 
 .logo-container {
     display: flex;
@@ -41,14 +58,14 @@ body {
     margin-bottom: 24px;
 }
 
+/* GAYA FOTO PROFIL ANDA */
 .logo-img {
-    width: 90px;
-    height: 90px;
-    object-fit: contain;
-    border-radius: 50%;
-    background-color: #ffffff;
-    padding: 5px;
-    border: 2px solid var(--border-color);
+    width: 100px; /* Ukuran foto profil */
+    height: 100px;
+    object-fit: cover; /* Agar foto tidak gepeng */
+    border-radius: 50%; /* Bulat sempurna */
+    border: 3px solid var(--border-color);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
 .identity-card {
@@ -102,7 +119,7 @@ body {
     background-color: var(--accent-blue-hover);
 }
 
-/* --- AREA PDF UTAMA (KANAN) --- */
+/* --- AREA PDF UTAMA (Kanan) --- */
 .main-content {
     flex: 1;
     display: flex;
@@ -111,6 +128,7 @@ body {
     height: 100vh;
 }
 
+/* Toolbar Navigasi Desktop - Sembunyikan di Mobile */
 .toolbar {
     background-color: var(--bg-card);
     border-bottom: 1px solid var(--border-color);
@@ -153,6 +171,7 @@ body {
     color: var(--text-primary);
 }
 
+/* Area Canvas */
 .canvas-container {
     flex: 1;
     overflow: auto;
@@ -169,28 +188,87 @@ canvas {
     height: auto !important;
 }
 
-/* --- RESPONSIVE LAYOUT (UNTUK MOBILE) --- */
+/* --- PEMBARUAN: NAVBAR MOBILE (Hanya muncul di HP) --- */
+.mobile-nav {
+    display: none; /* Sembunyikan di desktop */
+    background-color: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
+    padding: 10px 16px;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+
+.menu-toggle {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 5px;
+}
+.menu-toggle:hover { color: var(--text-primary); }
+
+.pdf-nav-mobile {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-nav-mobile {
+    background-color: var(--btn-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    cursor: pointer;
+}
+
+
+/* =============================================
+   ULTRA-RESPONSIVE MEDIA QUERY (UNTUK MOBILE)
+   ============================================= */
 @media (max-width: 768px) {
     body {
         flex-direction: column;
         overflow: auto;
     }
+
+    /* Sembunyikan Toolbar Desktop */
+    .toolbar { display: none; }
+
+    /* Tampilkan Mobile Nav */
+    .mobile-nav { display: flex; }
+
+    /* --- SIDEBAR MOBILE: Menjadi Sidebar Tersembunyi --- */
     .sidebar {
-        width: 100%;
-        border-right: none;
-        border-bottom: 1px solid var(--border-color);
-        padding: 16px;
+        position: fixed; /* Mendorongnya ke atas segalanya */
+        top: 0;
+        left: 0;
+        width: 280px; /* Lebar Sidebar HP */
+        height: 100vh;
+        transform: translateX(-100%); /* Sembunyikan ke kiri layar */
+        border-right: 1px solid var(--border-color);
+        box-shadow: 10px 0 30px rgba(0,0,0,0.5);
+        padding: 20px;
     }
-    .identity-card {
-        margin-bottom: 16px;
+
+    /* Kelas untuk membuka sidebar (akan ditambahkan via JS) */
+    .sidebar.open {
+        transform: translateX(0); /* Munculkan ke layar */
     }
+
+    /* Tampilkan Tombol Tutup di Mobile Sidebar */
+    .close-sidebar-btn { display: block; }
+
+    /* Area Kanan/PDF di Mobile */
     .main-content {
         height: auto;
+        margin-left: 0;
     }
+
     .canvas-container {
         padding: 16px 10px;
-    }
-    .btn-download {
-        margin-top: 10px;
     }
 }
