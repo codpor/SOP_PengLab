@@ -1,0 +1,196 @@
+/* TEMA GITHUB DARK */
+:root {
+    --bg-main: #0d1117;
+    --bg-card: #161b22;
+    --border-color: #30363d;
+    --text-primary: #c9d1d9;
+    --text-muted: #8b949e;
+    --accent-blue: #2f81f7;
+    --accent-blue-hover: #1f6feb;
+    --btn-bg: #21262d;
+    --btn-hover: #30363d;
+}
+
+body {
+    margin: 0;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* --- SIDEBAR / IDENTITAS KIRI --- */
+.sidebar {
+    width: 320px;
+    background-color: var(--bg-card);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    flex-shrink: 0;
+}
+
+.logo-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.logo-img {
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+    border-radius: 50%;
+    background-color: #ffffff;
+    padding: 5px;
+    border: 2px solid var(--border-color);
+}
+
+.identity-card {
+    background-color: var(--bg-main);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.identity-card h2 {
+    margin: 0 0 5px 0;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+
+.identity-info {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+.identity-info strong {
+    color: var(--text-primary);
+}
+
+.divider {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 15px 0;
+}
+
+.btn-download {
+    background-color: var(--accent-blue);
+    color: #ffffff;
+    text-decoration: none;
+    padding: 12px;
+    border-radius: 6px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.2s;
+    margin-top: auto;
+}
+
+.btn-download:hover {
+    background-color: var(--accent-blue-hover);
+}
+
+/* --- AREA PDF UTAMA (KANAN) --- */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    height: 100vh;
+}
+
+.toolbar {
+    background-color: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
+    padding: 12px 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.btn-nav {
+    background-color: var(--btn-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-nav:hover {
+    background-color: var(--btn-hover);
+    border-color: var(--text-muted);
+}
+
+.page-info {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+}
+
+.page-info strong {
+    color: var(--text-primary);
+}
+
+.canvas-container {
+    flex: 1;
+    overflow: auto;
+    padding: 30px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+canvas {
+    border-radius: 4px;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.1), 0 10px 20px rgba(0,0,0,0.5);
+    max-width: 100%;
+    height: auto !important;
+}
+
+/* --- RESPONSIVE LAYOUT (UNTUK MOBILE) --- */
+@media (max-width: 768px) {
+    body {
+        flex-direction: column;
+        overflow: auto;
+    }
+    .sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        padding: 16px;
+    }
+    .identity-card {
+        margin-bottom: 16px;
+    }
+    .main-content {
+        height: auto;
+    }
+    .canvas-container {
+        padding: 16px 10px;
+    }
+    .btn-download {
+        margin-top: 10px;
+    }
+}
