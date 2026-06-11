@@ -10,7 +10,7 @@
     <style>
         body {
             margin: 0;
-            background-color: #334155; /* Warna latar belakang gelap khas PDF viewer */
+            background-color: #334155;
             font-family: 'Segoe UI', Arial, sans-serif;
             display: flex;
             flex-direction: column;
@@ -29,6 +29,7 @@
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
             position: sticky;
             top: 0;
+            z-index: 10;
         }
         .btn {
             background-color: #3b82f6;
@@ -41,7 +42,6 @@
             transition: background 0.2s;
         }
         .btn:hover { background-color: #2563eb; }
-        .btn:disabled { background-color: #64748b; cursor: not-allowed; }
         
         .canvas-container {
             margin-top: 25px;
@@ -54,7 +54,7 @@
         canvas {
             border-radius: 4px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            max-width: 95%; /* Agar responsif di layar kecil */
+            max-width: 95%;
         }
     </style>
 </head>
@@ -71,10 +71,9 @@
     </div>
 
     <script>
-        // PENTING: Masukkan nama file PDF yang benar di sini (Pastikan tanpa spasi!)
+        // NAMA FILE PDF (Sesuai dengan screenshot Anda)
         const url = 'Dokumen_SOP.pdf'; 
 
-        // Inisialisasi PDF.js Worker
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
         let pdfDoc = null,
@@ -85,12 +84,10 @@
         const canvas = document.getElementById('pdf-render'),
               ctx = canvas.getContext('2d');
 
-        // Fungsi Inti: Merender PDF ke dalam Canvas HTML
+        // Fungsi Render Halaman
         const renderPage = num => {
             pageIsRendering = true;
-
             pdfDoc.getPage(num).then(page => {
-                // Skala 1.5 agar tulisan dokumen jernih dan tidak pecah
                 const viewport = page.getViewport({ scale: 1.5 });
                 canvas.height = viewport.height;
                 canvas.width = viewport.width;
@@ -105,7 +102,7 @@
                     }
                 });
 
-                // Update angka halaman di panel atas
+                // Update teks angka di layar
                 document.getElementById('page-num').textContent = num;
             });
         };
@@ -118,38 +115,33 @@
             }
         };
 
-        // Membaca target halaman dari URL website Anda (#page=8)
+        // Fungsi mengambil angka halaman dari URL dengan lebih akurat
         const getPageFromHash = () => {
             const hash = window.location.hash;
-            if (hash.includes('page=')) {
-                const num = parseInt(hash.replace('#page=', ''));
-                return isNaN(num) ? 1 : num;
+            const match = hash.match(/page=(\d+)/);
+            if (match) {
+                return parseInt(match[1], 10);
             }
             return 1;
         };
 
-        // Fungsi Tombol Navigasi
+        // Navigasi Tombol (Sekarang HANYA mengubah URL, sistem yang akan menangani rendernya)
         const showPrevPage = () => {
             if (pageNum <= 1) return;
-            pageNum--;
-            window.location.hash = `page=${pageNum}`; // Update URL otomatis
+            window.location.hash = `page=${pageNum - 1}`; 
         };
 
         const showNextPage = () => {
             if (pageNum >= pdfDoc.numPages) return;
-            pageNum++;
-            window.location.hash = `page=${pageNum}`; // Update URL otomatis
+            window.location.hash = `page=${pageNum + 1}`; 
         };
 
-        // Proses Pemuatan Dokumen Pertama Kali
+        // Proses Pemuatan Pertama
         pdfjsLib.getDocument(url).promise.then(pdfDoc_ => {
             pdfDoc = pdfDoc_;
             document.getElementById('page-count').textContent = pdfDoc.numPages;
 
-            // Baca URL, cek apakah ada perintah #page=
             let targetPage = getPageFromHash();
-            
-            // Validasi agar tidak error jika user memasukkan angka sembarangan
             if (targetPage > pdfDoc.numPages) targetPage = pdfDoc.numPages;
             if (targetPage < 1) targetPage = 1;
             
@@ -157,23 +149,26 @@
             renderPage(pageNum);
         }).catch(err => {
             console.error("Error memuat PDF:", err);
-            alert("Gagal memuat PDF. Pastikan nama file di dalam kode Javascript sudah sesuai dengan file aslinya.");
+            alert("Gagal memuat PDF.");
         });
 
-        // Event Listener untuk tombol
+        // Event Listeners
         document.getElementById('prev-page').addEventListener('click', showPrevPage);
         document.getElementById('next-page').addEventListener('click', showNextPage);
 
-        // Bereaksi jika Anda mengubah #page=8 secara manual di Address Bar
+        // Jika URL berubah (baik diketik manual atau via tombol)
         window.addEventListener('hashchange', () => {
-            const newPage = getPageFromHash();
-            if (newPage !== pageNum && pdfDoc) {
+            if (!pdfDoc) return; // Cegah error jika PDF belum selesai dimuat
+            
+            let newPage = getPageFromHash();
+            
+            // Validasi batasan halaman
+            if (newPage > pdfDoc.numPages) newPage = pdfDoc.numPages;
+            if (newPage < 1) newPage = 1;
+
+            // Jika halamannya berbeda, proses perubahan layarnya
+            if (newPage !== pageNum) {
                 pageNum = newPage;
-                
-                // Cegah melebihi batas halaman
-                if(pageNum > pdfDoc.numPages) pageNum = pdfDoc.numPages;
-                if(pageNum < 1) pageNum = 1;
-                
                 queueRenderPage(pageNum);
             }
         });
