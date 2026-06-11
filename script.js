@@ -11,15 +11,35 @@ let pdfDoc = null,
 const canvas = document.getElementById('pdf-render'),
       ctx = canvas.getContext('2d');
 
-// Fungsi Render PDF
+// Fungsi Render PDF (Kualitas Tinggi / Retina Ready)
 const renderPage = num => {
     pageIsRendering = true;
     pdfDoc.getPage(num).then(page => {
-        const viewport = page.getViewport({ scale: 1.5 });
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
+        // 1. Perbesar skala dasar untuk detail yang lebih tajam (dari 1.5 menjadi 2.0)
+        const baseScale = 3.0; 
+        const viewport = page.getViewport({ scale: baseScale });
 
-        const renderCtx = { canvasContext: ctx, viewport: viewport };
+        // 2. Deteksi kepadatan piksel layar perangkat pengunjung (DPR)
+        const outputScale = window.devicePixelRatio || 1;
+
+        // 3. Atur resolusi internal canvas menjadi sangat tinggi
+        canvas.width = Math.floor(viewport.width * outputScale);
+        canvas.height = Math.floor(viewport.height * outputScale);
+        
+        // 4. Atur ukuran visual canvas menggunakan CSS agar pas di layar
+        canvas.style.width = Math.floor(viewport.width) + "px";
+        canvas.style.height = Math.floor(viewport.height) + "px";
+
+        // 5. Terapkan transformasi ketajaman
+        const transform = outputScale !== 1 
+            ? [outputScale, 0, 0, outputScale, 0, 0] 
+            : null;
+
+        const renderCtx = { 
+            canvasContext: ctx, 
+            transform: transform,
+            viewport: viewport 
+        };
 
         page.render(renderCtx).promise.then(() => {
             pageIsRendering = false;
