@@ -170,3 +170,43 @@ if (fotoProfil) {
         this.src = 'https://via.placeholder.com/100?text=AFM';
     });
 }
+
+// =============================================
+// FITUR OTOMATIS MEMBULATKAN FAVICON
+// =============================================
+function buatFaviconBulat(urlGambar) {
+    const img = new Image();
+    
+    img.onload = function() {
+        // Membuat kanvas tak terlihat untuk menggambar
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        
+        // Membuat pola potongan bulat (lingkaran sempurna)
+        ctx.beginPath();
+        ctx.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.clip();
+        
+        // Menggambar logo asli Anda ke dalam pola lingkaran tersebut
+        ctx.drawImage(img, 0, 0);
+        
+        // Mencari tag favicon di HTML dan menimpanya dengan gambar bulat yang baru
+        let linkFavicon = document.querySelector("link[rel*='icon']");
+        if (!linkFavicon) {
+            linkFavicon = document.createElement('link');
+            linkFavicon.rel = 'icon';
+            document.head.appendChild(linkFavicon);
+        }
+        
+        // Mengubahnya menjadi file PNG dan memasangnya
+        linkFavicon.href = canvas.toDataURL('image/png');
+    };
+    
+    img.src = urlGambar;
+}
+
+// Menjalankan fungsi untuk membulatkan 'logo.png'
+buatFaviconBulat('logo.png');
