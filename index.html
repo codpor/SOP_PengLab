@@ -117,22 +117,32 @@
     </div>
 
     <script>
-        // PENTING: Ubah "panduan.pdf" di bawah ini sesuai nama file PDF Anda!
-        const NAMA_FILE_PDF = "Dokumen_SOP.pdf"; 
+        // PENTING: Pastikan nama file ini sudah benar dan tanpa spasi!
+        const NAMA_FILE_PDF = "Backend_SOP_Arif_Fakhry_Maulana_2413025048.pdf"; 
 
         function aturHalamanPDF() {
-            const iframe = document.getElementById('my-pdf-viewer');
-            const hashDariURL = window.location.hash; // Mendapatkan "#page=8" dari URL website
+            const wadahPDF = document.querySelector('.pdf-wrapper');
+            let hashDariURL = window.location.hash; 
 
-            if (hashDariURL && hashDariURL.includes('page=')) {
-                // Jika user mengetik atau mengklik link ber-hash, teruskan hash tersebut ke file PDF
-                iframe.src = NAMA_FILE_PDF + hashDariURL;
-            } else {
-                // Jika tidak ada hash di URL website, buka halaman 1 secara default
-                iframe.src = NAMA_FILE_PDF + "#page=1";
+            // Jika tidak ada parameter page, arahkan ke halaman 1
+            if (!hashDariURL || !hashDariURL.includes('page=')) {
+                hashDariURL = "#page=1";
             }
 
-            // [Opsional] Mengubah warna tombol navigasi agar terlihat aktif
+            // TRIK PAMUNGKAS: Tambahkan "?t=(angka_acak)" sebelum hash.
+            // Ini memaksa browser mereset PDF viewer dan membaca ulang halaman tujuan.
+            const angkaAcak = new Date().getTime(); 
+            const urlLengkap = `${NAMA_FILE_PDF}?t=${angkaAcak}${hashDariURL}`;
+
+            // Gunakan tag <object> alih-alih <iframe> untuk kompabilitas PDF yang lebih ketat
+            wadahPDF.innerHTML = `<object data="${urlLengkap}" type="application/pdf" width="100%" height="100%">
+                                    <div style="padding: 20px; text-align: center;">
+                                        Browser tidak mendukung preview PDF. 
+                                        <a href="${NAMA_FILE_PDF}" target="_blank">Download PDF-nya di sini</a>
+                                    </div>
+                                  </object>`;
+
+            // Update warna tombol navigasi agar aktif sesuai halaman
             document.querySelectorAll('.nav-links .btn').forEach(btn => {
                 if (btn.getAttribute('href') === hashDariURL) {
                     btn.classList.add('active');
@@ -142,10 +152,10 @@
             });
         }
 
-        // Jalankan fungsi saat website pertama kali dimuat
+        // Jalankan saat web dibuka
         window.addEventListener('load', aturHalamanPDF);
 
-        // Jalankan fungsi lagi secara otomatis jika hash URL berubah tanpa reload halaman
+        // Jalankan saat ada perubahan URL (misal: tombol diklik)
         window.addEventListener('hashchange', aturHalamanPDF);
     </script>
 </body>
