@@ -3,160 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Penampil PDF Kustom</title>
+    <title>SOP Laboratorium Viewer</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    
     <style>
-        /* Desain Dasar Modern */
-        * {
-            box-sizing: border-box;
-        }
         body {
             margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f0f2f5;
+            background-color: #334155; /* Warna latar belakang gelap khas PDF viewer */
+            font-family: 'Segoe UI', Arial, sans-serif;
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            color: #333;
-        }
-
-        /* Bagian Header / Navigasi */
-        header {
-            background-color: #1e293b;
-            color: white;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: 100vh;
         }
-        header h1 {
-            margin: 0;
-            font-size: 1.25rem;
-            font-weight: 600;
-        }
-        .nav-links {
+        .toolbar {
+            background-color: #0f172a;
+            width: 100%;
+            padding: 15px;
             display: flex;
-            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 0;
         }
         .btn {
             background-color: #3b82f6;
             color: white;
             border: none;
-            padding: 8px 16px;
+            padding: 8px 20px;
             border-radius: 6px;
             cursor: pointer;
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 500;
+            font-weight: bold;
             transition: background 0.2s;
         }
-        .btn:hover {
-            background-color: #2563eb;
-        }
-        /* Style untuk menandai halaman aktif */
-        .btn.active {
-            background-color: #ef4444; 
-        }
-
-        /* Wadah Utama PDF */
-        .main-container {
-            flex: 1;
-            padding: 20px;
+        .btn:hover { background-color: #2563eb; }
+        .btn:disabled { background-color: #64748b; cursor: not-allowed; }
+        
+        .canvas-container {
+            margin-top: 25px;
+            margin-bottom: 25px;
+            overflow: auto;
             display: flex;
-            flex-direction: column;
-        }
-        .pdf-wrapper {
-            flex: 1;
-            background: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        iframe {
+            justify-content: center;
             width: 100%;
-            height: 100%;
-            border: none;
         }
-
-        /* Informasi di bagian bawah */
-        .footer-info {
-            text-align: center;
-            font-size: 0.85rem;
-            color: #64748b;
-            margin-top: 12px;
-        }
-        code {
-            background: #e2e8f0;
-            padding: 2px 6px;
+        canvas {
             border-radius: 4px;
-            color: #0f172a;
-            font-family: monospace;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            max-width: 95%; /* Agar responsif di layar kecil */
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>E-Book & Dokumen Viewer</h1>
-        <div class="nav-links">
-            <a href="#page=8" class="btn">SOP PENGGUNAAN BEBAS (OPEN LAB) MAHASISWA</a>
-            <a href="#page=14" class="btn">SOP PERAWATAN PREVENTIF HARDWARE DAN JARINGAN </a>
-            <a href="#page=20" class="btn">SOP BACKUP DAN RECOVERY DATA LABORATORIUM</a>
-            <a href="#page=26" class="btn">SOP PENGELOLAAN BAHAN HABIS PAKAI (CONSUMABLES)</a>
-            <a href="#page=32" class="btn">SOP PENANGANAN SITUASI DARURAT FISIK </a>
-        </div>
-    </header>
+    <div class="toolbar">
+        <button class="btn" id="prev-page">⬅ Sebelumnya</button>
+        <span style="font-size: 1.1rem;">Halaman: <strong id="page-num">0</strong> / <span id="page-count">0</span></span>
+        <button class="btn" id="next-page">Selanjutnya ➡</button>
+    </div>
 
-    <div class="main-container">
-        <div class="pdf-wrapper">
-            <iframe id="my-pdf-viewer" src="about:blank">
-                Browser Anda tidak mendukung fitur preview PDF.
-            </iframe>
-        </div>
+    <div class="canvas-container">
+        <canvas id="pdf-render"></canvas>
     </div>
 
     <script>
-        // PENTING: Pastikan nama file ini sudah benar dan tanpa spasi!
-        const NAMA_FILE_PDF = "Backend_SOP_Arif_Fakhry_Maulana_2413025048.pdf"; 
+        // PENTING: Masukkan nama file PDF yang benar di sini (Pastikan tanpa spasi!)
+        const url = 'Backend_SOP_Arif_Fakhry_Maulana_2413025048.pdf'; 
 
-        function aturHalamanPDF() {
-            const wadahPDF = document.querySelector('.pdf-wrapper');
-            let hashDariURL = window.location.hash; 
+        // Inisialisasi PDF.js Worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-            // Jika tidak ada parameter page, arahkan ke halaman 1
-            if (!hashDariURL || !hashDariURL.includes('page=')) {
-                hashDariURL = "#page=1";
-            }
+        let pdfDoc = null,
+            pageNum = 1,
+            pageIsRendering = false,
+            pageNumIsPending = null;
 
-            // TRIK PAMUNGKAS: Tambahkan "?t=(angka_acak)" sebelum hash.
-            // Ini memaksa browser mereset PDF viewer dan membaca ulang halaman tujuan.
-            const angkaAcak = new Date().getTime(); 
-            const urlLengkap = `${NAMA_FILE_PDF}?t=${angkaAcak}${hashDariURL}`;
+        const canvas = document.getElementById('pdf-render'),
+              ctx = canvas.getContext('2d');
 
-            // Gunakan tag <object> alih-alih <iframe> untuk kompabilitas PDF yang lebih ketat
-            wadahPDF.innerHTML = `<object data="${urlLengkap}" type="application/pdf" width="100%" height="100%">
-                                    <div style="padding: 20px; text-align: center;">
-                                        Browser tidak mendukung preview PDF. 
-                                        <a href="${NAMA_FILE_PDF}" target="_blank">Download PDF-nya di sini</a>
-                                    </div>
-                                  </object>`;
+        // Fungsi Inti: Merender PDF ke dalam Canvas HTML
+        const renderPage = num => {
+            pageIsRendering = true;
 
-            // Update warna tombol navigasi agar aktif sesuai halaman
-            document.querySelectorAll('.nav-links .btn').forEach(btn => {
-                if (btn.getAttribute('href') === hashDariURL) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
+            pdfDoc.getPage(num).then(page => {
+                // Skala 1.5 agar tulisan dokumen jernih dan tidak pecah
+                const viewport = page.getViewport({ scale: 1.5 });
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                const renderCtx = { canvasContext: ctx, viewport: viewport };
+
+                page.render(renderCtx).promise.then(() => {
+                    pageIsRendering = false;
+                    if (pageNumIsPending !== null) {
+                        renderPage(pageNumIsPending);
+                        pageNumIsPending = null;
+                    }
+                });
+
+                // Update angka halaman di panel atas
+                document.getElementById('page-num').textContent = num;
             });
-        }
+        };
 
-        // Jalankan saat web dibuka
-        window.addEventListener('load', aturHalamanPDF);
+        const queueRenderPage = num => {
+            if (pageIsRendering) {
+                pageNumIsPending = num;
+            } else {
+                renderPage(num);
+            }
+        };
 
-        // Jalankan saat ada perubahan URL (misal: tombol diklik)
-        window.addEventListener('hashchange', aturHalamanPDF);
+        // Membaca target halaman dari URL website Anda (#page=8)
+        const getPageFromHash = () => {
+            const hash = window.location.hash;
+            if (hash.includes('page=')) {
+                const num = parseInt(hash.replace('#page=', ''));
+                return isNaN(num) ? 1 : num;
+            }
+            return 1;
+        };
+
+        // Fungsi Tombol Navigasi
+        const showPrevPage = () => {
+            if (pageNum <= 1) return;
+            pageNum--;
+            window.location.hash = `page=${pageNum}`; // Update URL otomatis
+        };
+
+        const showNextPage = () => {
+            if (pageNum >= pdfDoc.numPages) return;
+            pageNum++;
+            window.location.hash = `page=${pageNum}`; // Update URL otomatis
+        };
+
+        // Proses Pemuatan Dokumen Pertama Kali
+        pdfjsLib.getDocument(url).promise.then(pdfDoc_ => {
+            pdfDoc = pdfDoc_;
+            document.getElementById('page-count').textContent = pdfDoc.numPages;
+
+            // Baca URL, cek apakah ada perintah #page=
+            let targetPage = getPageFromHash();
+            
+            // Validasi agar tidak error jika user memasukkan angka sembarangan
+            if (targetPage > pdfDoc.numPages) targetPage = pdfDoc.numPages;
+            if (targetPage < 1) targetPage = 1;
+            
+            pageNum = targetPage;
+            renderPage(pageNum);
+        }).catch(err => {
+            console.error("Error memuat PDF:", err);
+            alert("Gagal memuat PDF. Pastikan nama file di dalam kode Javascript sudah sesuai dengan file aslinya.");
+        });
+
+        // Event Listener untuk tombol
+        document.getElementById('prev-page').addEventListener('click', showPrevPage);
+        document.getElementById('next-page').addEventListener('click', showNextPage);
+
+        // Bereaksi jika Anda mengubah #page=8 secara manual di Address Bar
+        window.addEventListener('hashchange', () => {
+            const newPage = getPageFromHash();
+            if (newPage !== pageNum && pdfDoc) {
+                pageNum = newPage;
+                
+                // Cegah melebihi batas halaman
+                if(pageNum > pdfDoc.numPages) pageNum = pdfDoc.numPages;
+                if(pageNum < 1) pageNum = 1;
+                
+                queueRenderPage(pageNum);
+            }
+        });
     </script>
 </body>
 </html>
