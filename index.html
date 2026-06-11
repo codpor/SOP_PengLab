@@ -8,13 +8,31 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="light-theme"> <div class="mobile-nav">
+        <button class="menu-toggle" id="mobile-menu-btn" title="Tampilkan Identitas & Download">
+            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+        </button>
 
-    <div class="sidebar">
+        <div class="page-info">
+            Hal. <strong id="page-num-mobile">0</strong> / <span id="page-count-mobile">0</span>
+        </div>
+
+        <div class="pdf-nav-mobile">
+            <button class="btn-nav-mobile" id="prev-page-mobile">&larr;</button>
+            <button class="btn-nav-mobile" id="next-page-mobile">&rarr;</button>
+        </div>
+    </div>
+
+
+    <div class="sidebar" id="main-sidebar">
+        <button class="close-sidebar-btn" id="mobile-close-btn">&times;</button>
+
         <div class="logo-container">
-            <img src="logo_unila.png" alt="Logo Universitas Lampung" class="logo-img" id="logo-kampus">
+            <img src="foto_profil.jpg" alt="Foto Profil Arif Fakhry Maulana" class="logo-img" id="foto-profil">
         </div>
 
         <div class="identity-card">
@@ -37,6 +55,7 @@
         </a>
     </div>
 
+
     <div class="main-content">
         <div class="toolbar">
             <button class="btn-nav" id="prev-page" title="Bisa tekan tombol Panah Kiri di keyboard">
@@ -44,7 +63,7 @@
             </button>
             
             <div class="page-info">
-                Hal. <strong id="page-num">0</strong> / <span id="page-count">0</span>
+                Halaman: <strong id="page-num">0</strong> / <span id="page-count">0</span>
             </div>
             
             <button class="btn-nav" id="next-page" title="Bisa tekan tombol Panah Kanan di keyboard">
