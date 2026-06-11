@@ -29,7 +29,13 @@ const renderPage = num => {
             }
         });
 
-        document.getElementById('page-num').textContent = num;
+        // Update indikator halaman di Desktop
+        const pageNumEl = document.getElementById('page-num');
+        if(pageNumEl) pageNumEl.textContent = num;
+
+        // Update indikator halaman di Mobile
+        const pageNumMobileEl = document.getElementById('page-num-mobile');
+        if(pageNumMobileEl) pageNumMobileEl.textContent = num;
     });
 };
 
@@ -63,7 +69,14 @@ const showNextPage = () => {
 // Pemuatan Dokumen Pertama
 pdfjsLib.getDocument(url).promise.then(pdfDoc_ => {
     pdfDoc = pdfDoc_;
-    document.getElementById('page-count').textContent = pdfDoc.numPages;
+    
+    // Update jumlah total halaman di Desktop
+    const pageCountEl = document.getElementById('page-count');
+    if(pageCountEl) pageCountEl.textContent = pdfDoc.numPages;
+
+    // Update jumlah total halaman di Mobile
+    const pageCountMobileEl = document.getElementById('page-count-mobile');
+    if(pageCountMobileEl) pageCountMobileEl.textContent = pdfDoc.numPages;
 
     let targetPage = getPageFromHash();
     if (targetPage > pdfDoc.numPages) targetPage = pdfDoc.numPages;
@@ -76,11 +89,56 @@ pdfjsLib.getDocument(url).promise.then(pdfDoc_ => {
     alert("Gagal memuat PDF. Pastikan nama file sudah sesuai.");
 });
 
-// Event Listeners Klik Tombol
-document.getElementById('prev-page').addEventListener('click', showPrevPage);
-document.getElementById('next-page').addEventListener('click', showNextPage);
 
-// Navigasi Tombol Keyboard (Panah Kiri & Kanan)
+// =============================================
+//      EVENT LISTENERS (Desktop & Mobile)
+// =============================================
+
+// --- Tombol Desktop ---
+const prevBtn = document.getElementById('prev-page');
+if(prevBtn) prevBtn.addEventListener('click', showPrevPage);
+
+const nextBtn = document.getElementById('next-page');
+if(nextBtn) nextBtn.addEventListener('click', showNextPage);
+
+
+// --- Tombol Mobile ---
+const prevBtnMobile = document.getElementById('prev-page-mobile');
+if(prevBtnMobile) prevBtnMobile.addEventListener('click', showPrevPage);
+
+const nextBtnMobile = document.getElementById('next-page-mobile');
+if(nextBtnMobile) nextBtnMobile.addEventListener('click', showNextPage);
+
+
+// --- LOGIKA MENU PONSEL (Hamburger) ---
+const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+const mobileCloseBtn = document.getElementById('mobile-close-btn');
+const mainSidebar = document.getElementById('main-sidebar');
+
+if(mobileMenuBtn && mobileCloseBtn && mainSidebar) {
+    // Buka Sidebar
+    mobileMenuBtn.addEventListener('click', () => {
+        mainSidebar.classList.add('open');
+    });
+
+    // Tutup Sidebar
+    mobileCloseBtn.addEventListener('click', () => {
+        mainSidebar.classList.remove('remove');
+    });
+
+    // Opsional: Tutup sidebar jika user klik di luar sidebar
+    document.addEventListener('click', (event) => {
+        const isClickInsideMenu = mobileMenuBtn.contains(event.target);
+        const isClickInsideSidebar = mainSidebar.contains(event.target);
+
+        if (!isClickInsideSidebar && !isClickInsideMenu && mainSidebar.classList.contains('open')) {
+            mainSidebar.classList.remove('open');
+        }
+    });
+}
+
+
+// --- Tombol Keyboard ---
 document.addEventListener('keydown', (event) => {
     if (event.key === 'ArrowLeft') {
         showPrevPage();
@@ -89,7 +147,7 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
-// Event Listener Perubahan URL (Hash)
+// --- Hash URL ---
 window.addEventListener('hashchange', () => {
     if (!pdfDoc) return; 
     
@@ -104,10 +162,11 @@ window.addEventListener('hashchange', () => {
     }
 });
 
-// Penanganan Gambar Logo Error (Jika logo belum diupload)
-const logoKampus = document.getElementById('logo-kampus');
-if (logoKampus) {
-    logoKampus.addEventListener('error', function() {
-        this.style.display = 'none'; // Sembunyikan jika gambar gagal dimuat
+// Penanganan Gambar Foto Profil Error (Placeholder)
+const fotoProfil = document.getElementById('foto-profil');
+if (fotoProfil) {
+    fotoProfil.addEventListener('error', function() {
+        // Ganti src ke placeholder atau bulatan kosong jika foto belum ada
+        this.src = 'https://via.placeholder.com/100?text=AFM';
     });
 }
