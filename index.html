@@ -6,64 +6,163 @@
     <title>SOP Laboratorium Viewer</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     
     <style>
+        /* Desain Dasar */
         body {
             margin: 0;
-            background-color: #334155;
-            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #e2e8f0; /* Abu-abu lembut khas meja kerja modern */
+            font-family: 'Inter', sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
         }
-        .toolbar {
-            background-color: #0f172a;
+
+        /* Header / Navbar Modern */
+        .navbar {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
             width: 100%;
-            padding: 15px;
+            padding: 12px 32px;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            gap: 20px;
-            color: white;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 4px 15px rgba(0,0,0,0.05);
             position: sticky;
             top: 0;
-            z-index: 10;
+            z-index: 50;
+            box-sizing: border-box;
         }
-        .btn {
-            background-color: #3b82f6;
-            color: white;
-            border: none;
-            padding: 8px 20px;
+
+        /* Judul Dokumen di Kiri */
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            color: #0f172a;
+            font-size: 1.1rem;
+        }
+        
+        .nav-brand svg {
+            width: 24px;
+            height: 24px;
+            color: #ef4444; /* Warna ikon PDF (Merah) */
+        }
+
+        /* Wadah Kontrol Navigasi di Tengah/Kanan */
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: #f8fafc;
+            padding: 6px 8px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Tombol Modern */
+        .btn-icon {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 8px 16px;
             border-radius: 6px;
             cursor: pointer;
-            font-weight: bold;
-            transition: background 0.2s;
+            font-weight: 500;
+            color: #334155;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
         }
-        .btn:hover { background-color: #2563eb; }
-        
+
+        .btn-icon:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+            border-color: #94a3b8;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .btn-icon:active {
+            transform: scale(0.97);
+        }
+
+        /* Teks Indikator Halaman */
+        .page-info {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #64748b;
+            min-width: 90px;
+            text-align: center;
+            user-select: none;
+        }
+
+        .page-info strong {
+            color: #0f172a;
+            font-weight: 600;
+        }
+
+        /* Area Canvas PDF */
         .canvas-container {
-            margin-top: 25px;
-            margin-bottom: 25px;
-            overflow: auto;
+            padding: 32px 16px;
             display: flex;
             justify-content: center;
             width: 100%;
+            box-sizing: border-box;
         }
+
         canvas {
-            border-radius: 4px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            max-width: 95%;
+            background: white;
+            border-radius: 8px;
+            /* Efek bayangan realistis seperti kertas nyata */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0,0,0,0.05);
+            max-width: 100%;
+            height: auto !important; /* Memastikan rasio tidak gepeng di HP */
+        }
+
+        /* Responsif untuk Layar HP */
+        @media (max-width: 640px) {
+            .navbar {
+                flex-direction: column;
+                gap: 16px;
+                padding: 16px;
+            }
+            .nav-brand {
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
 <body>
 
-    <div class="toolbar">
-        <button class="btn" id="prev-page">⬅ Sebelumnya</button>
-        <span style="font-size: 1.1rem;">Halaman: <strong id="page-num">0</strong> / <span id="page-count">0</span></span>
-        <button class="btn" id="next-page">Selanjutnya ➡</button>
+    <div class="navbar">
+        <div class="nav-brand">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8.25 10.5a1.499 1.499 0 11-2.998 0 1.499 1.499 0 012.998 0z" />
+                <path fill-rule="evenodd" d="M3 4.5A1.5 1.5 0 014.5 3h15A1.5 1.5 0 0121 4.5v15A1.5 1.5 0 0119.5 21h-15A1.5 1.5 0 013 19.5v-15zm3.75 3a2.25 2.25 0 10-4.5 0v3a2.25 2.25 0 104.5 0v-3zm0 9a2.25 2.25 0 10-4.5 0v3a2.25 2.25 0 104.5 0v-3zm9-9a2.25 2.25 0 10-4.5 0v3a2.25 2.25 0 104.5 0v-3zm0 9a2.25 2.25 0 10-4.5 0v3a2.25 2.25 0 104.5 0v-3zM15 10.5a1.499 1.499 0 11-2.998 0 1.499 1.499 0 012.998 0z" clip-rule="evenodd" />
+            </svg>
+            SOP Laboratorium Komputer
+        </div>
+
+        <div class="controls">
+            <button class="btn-icon" id="prev-page">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
+                Sebelumnya
+            </button>
+            
+            <div class="page-info">
+                <strong id="page-num">0</strong> / <span id="page-count">0</span>
+            </div>
+            
+            <button class="btn-icon" id="next-page">
+                Selanjutnya
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+        </div>
     </div>
 
     <div class="canvas-container">
@@ -71,8 +170,8 @@
     </div>
 
     <script>
-        // NAMA FILE PDF (Sesuai dengan screenshot Anda)
-        const url = 'Dokumen_SOP.pdf'; 
+        // NAMA FILE PDF ANDA
+        const url = 'Backend_SOP_Arif_Fakhry_Maulana_2413025048.pdf'; 
 
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
@@ -102,7 +201,6 @@
                     }
                 });
 
-                // Update teks angka di layar
                 document.getElementById('page-num').textContent = num;
             });
         };
@@ -115,17 +213,15 @@
             }
         };
 
-        // Fungsi mengambil angka halaman dari URL dengan lebih akurat
+        // Mengambil angka halaman dari URL
         const getPageFromHash = () => {
             const hash = window.location.hash;
             const match = hash.match(/page=(\d+)/);
-            if (match) {
-                return parseInt(match[1], 10);
-            }
+            if (match) return parseInt(match[1], 10);
             return 1;
         };
 
-        // Navigasi Tombol (Sekarang HANYA mengubah URL, sistem yang akan menangani rendernya)
+        // Navigasi URL
         const showPrevPage = () => {
             if (pageNum <= 1) return;
             window.location.hash = `page=${pageNum - 1}`; 
@@ -136,7 +232,7 @@
             window.location.hash = `page=${pageNum + 1}`; 
         };
 
-        // Proses Pemuatan Pertama
+        // Pemuatan Pertama
         pdfjsLib.getDocument(url).promise.then(pdfDoc_ => {
             pdfDoc = pdfDoc_;
             document.getElementById('page-count').textContent = pdfDoc.numPages;
@@ -156,17 +252,15 @@
         document.getElementById('prev-page').addEventListener('click', showPrevPage);
         document.getElementById('next-page').addEventListener('click', showNextPage);
 
-        // Jika URL berubah (baik diketik manual atau via tombol)
+        // Jika URL berubah (hashchange)
         window.addEventListener('hashchange', () => {
-            if (!pdfDoc) return; // Cegah error jika PDF belum selesai dimuat
+            if (!pdfDoc) return; 
             
             let newPage = getPageFromHash();
             
-            // Validasi batasan halaman
             if (newPage > pdfDoc.numPages) newPage = pdfDoc.numPages;
             if (newPage < 1) newPage = 1;
 
-            // Jika halamannya berbeda, proses perubahan layarnya
             if (newPage !== pageNum) {
                 pageNum = newPage;
                 queueRenderPage(pageNum);
