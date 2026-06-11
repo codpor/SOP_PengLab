@@ -230,3 +230,40 @@ function buatFaviconBulat(urlGambar) {
 
 // Menjalankan fungsi untuk membulatkan 'logo.png'
 buatFaviconBulat('logo.png');
+
+// =============================================
+// FITUR SWIPE (USAP LAYAR) UNTUK MOBILE
+// =============================================
+let touchstartX = 0;
+let touchendX = 0;
+
+// Fungsi untuk mengecek arah usapan
+const checkDirection = () => {
+    const threshold = 50; // Jarak usapan minimal (pixel) agar tidak sensitif saat sekadar tersentuh
+
+    if (touchendX < touchstartX - threshold) {
+        // Usap dari Kanan ke Kiri -> Halaman Selanjutnya
+        showNextPage();
+    }
+    
+    if (touchendX > touchstartX + threshold) {
+        // Usap dari Kiri ke Kanan -> Halaman Sebelumnya
+        showPrevPage();
+    }
+};
+
+// Memasang sensor sentuhan pada area dokumen PDF
+const areaSwipe = document.querySelector('.canvas-container');
+
+if (areaSwipe) {
+    // Saat jari mulai menyentuh layar
+    areaSwipe.addEventListener('touchstart', (e) => {
+        touchstartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    // Saat jari dilepas dari layar
+    areaSwipe.addEventListener('touchend', (e) => {
+        touchendX = e.changedTouches[0].screenX;
+        checkDirection();
+    }, { passive: true });
+}
