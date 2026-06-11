@@ -16,7 +16,7 @@ const renderPage = num => {
     pageIsRendering = true;
     pdfDoc.getPage(num).then(page => {
         // 1. Perbesar skala dasar untuk detail yang lebih tajam (dari 1.5 menjadi 2.0)
-        const baseScale = 2.5; 
+        const baseScale = 2.0; 
         const viewport = page.getViewport({ scale: baseScale });
 
         // 2. Deteksi kepadatan piksel layar perangkat pengunjung (DPR)
