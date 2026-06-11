@@ -121,12 +121,12 @@ if(mobileMenuBtn && mobileCloseBtn && mainSidebar) {
         mainSidebar.classList.add('open');
     });
 
-    // Tutup Sidebar
+    // Tutup Sidebar (Ini yang tadi salah ketik, sekarang sudah diperbaiki)
     mobileCloseBtn.addEventListener('click', () => {
-        mainSidebar.classList.remove('remove');
+        mainSidebar.classList.remove('open'); 
     });
 
-    // Opsional: Tutup sidebar jika user klik di luar sidebar
+    // Opsional: Tutup sidebar jika user klik area gelap/kosong di luar sidebar
     document.addEventListener('click', (event) => {
         const isClickInsideMenu = mobileMenuBtn.contains(event.target);
         const isClickInsideSidebar = mainSidebar.contains(event.target);
