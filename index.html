@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penampil PDF Kustom</title>
+    <style>
+        /* Desain Dasar Modern */
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            color: #333;
+        }
+
+        /* Bagian Header / Navigasi */
+        header {
+            background-color: #1e293b;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        .nav-links {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background-color: #2563eb;
+        }
+        /* Style untuk menandai halaman aktif */
+        .btn.active {
+            background-color: #ef4444; 
+        }
+
+        /* Wadah Utama PDF */
+        .main-container {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .pdf-wrapper {
+            flex: 1;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Informasi di bagian bawah */
+        .footer-info {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 12px;
+        }
+        code {
+            background: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #0f172a;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>E-Book & Dokumen Viewer</h1>
+        <div class="nav-links">
+            <a href="#page=8" class="btn">SOP PENGGUNAAN BEBAS (OPEN LAB) MAHASISWA</a>
+            <a href="#page=14" class="btn">SOP PERAWATAN PREVENTIF HARDWARE DAN JARINGAN </a>
+            <a href="#page=20" class="btn">SOP BACKUP DAN RECOVERY DATA LABORATORIUM</a>
+            <a href="#page=26" class="btn">SOP PENGELOLAAN BAHAN HABIS PAKAI (CONSUMABLES)</a>
+            <a href="#page=32" class="btn">SOP PENANGANAN SITUASI DARURAT FISIK </a>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="pdf-wrapper">
+            <iframe id="my-pdf-viewer" src="about:blank">
+                Browser Anda tidak mendukung fitur preview PDF.
+            </iframe>
+        </div>
+        <div class="footer-info">
+            Tips: Tambahkan <code>#page=NomorHalaman</code> di akhir URL browser Anda untuk langsung melompat ke halaman tujuan.
+        </div>
+    </div>
+
+    <script>
+        // PENTING: Ubah "panduan.pdf" di bawah ini sesuai nama file PDF Anda!
+        const NAMA_FILE_PDF = "Backend SOP_Arif Fakhry Maulana_2413025048.pdf"; 
+
+        function aturHalamanPDF() {
+            const iframe = document.getElementById('my-pdf-viewer');
+            const hashDariURL = window.location.hash; // Mendapatkan "#page=8" dari URL website
+
+            if (hashDariURL && hashDariURL.includes('page=')) {
+                // Jika user mengetik atau mengklik link ber-hash, teruskan hash tersebut ke file PDF
+                iframe.src = NAMA_FILE_PDF + hashDariURL;
+            } else {
+                // Jika tidak ada hash di URL website, buka halaman 1 secara default
+                iframe.src = NAMA_FILE_PDF + "#page=1";
+            }
+
+            // [Opsional] Mengubah warna tombol navigasi agar terlihat aktif
+            document.querySelectorAll('.nav-links .btn').forEach(btn => {
+                if (btn.getAttribute('href') === hashDariURL) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        // Jalankan fungsi saat website pertama kali dimuat
+        window.addEventListener('load', aturHalamanPDF);
+
+        // Jalankan fungsi lagi secara otomatis jika hash URL berubah tanpa reload halaman
+        window.addEventListener('hashchange', aturHalamanPDF);
+    </script>
+</body>
+</html>
